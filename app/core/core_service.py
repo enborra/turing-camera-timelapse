@@ -238,10 +238,11 @@ class CoreService(object):
                         if not file_path.endswith('.DS_Store'):
                             images.append(imageio.imread(file_path))
 
-            try:
-                imageio.mimsave(movie_path, images, format=export_filetype)
-            except Exception,e:
-                print('Error: %s' % e)
+            if len(images) > 0:
+                try:
+                    imageio.mimsave(movie_path, images, format=export_filetype)
+                except Exception,e:
+                    print('Error: %s' % e)
 
 
 
