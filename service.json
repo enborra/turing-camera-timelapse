@@ -1,0 +1,8 @@
+{
+    "service-name": "com.turing.camera.timelapse",
+
+    "install": {
+        "osx": "com.turing.camera.timelapse.plist",
+        "raspberry_pi": "com.turing.camera.timelapse.service"
+    }
+}
