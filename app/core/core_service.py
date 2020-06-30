@@ -1,6 +1,6 @@
 import base64
 import calendar
-import cStringIO
+from io import StringIO
 from datetime import datetime, timedelta
 import errno
 import io
@@ -10,8 +10,8 @@ import signal
 import threading
 import time
 
-from PIL import Image
 import imageio
+from PIL import Image
 import paho.mqtt.client as mqtt
 
 try:
@@ -111,7 +111,7 @@ class CoreService(object):
             self._ensure_directory_existence(path_photos_hour)
 
             try:
-                image_base64 = msg.payload.decode('utf-8')
+                image_base64 = msg.payload
 
                 # ts = time.time()
                 # filename = '%s.png' % str(ts)
@@ -119,7 +119,7 @@ class CoreService(object):
 
                 if not os.path.exists(filename):
                     fh = open(filename, 'wb')
-                    fh.write(image_base64.decode('base64'))
+                    fh.write(base64.b64decode(image_base64))
 
             except Exception as e:
                 print('[CAMERA-TIMELAPSE] problem receiving message: %s' % e)
@@ -144,7 +144,7 @@ class CoreService(object):
                 60
             )
 
-        except Exception, e:
+        except Exception as e:
             print('Could not connect to local GranCentral. Retry in one second.')
 
             time.sleep(1)
@@ -241,7 +241,7 @@ class CoreService(object):
             if len(images) > 0:
                 try:
                     imageio.mimsave(movie_path, images, format=export_filetype)
-                except Exception,e:
+                except Exception as e:
                     print('Error: %s' % e)
 
 
