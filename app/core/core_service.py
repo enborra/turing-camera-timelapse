@@ -32,7 +32,7 @@ class CoreService(object):
     _op_timer = 0
 
     _system_channel = '/system'
-    _data_channel = '/camera/rpi'
+    _data_channel = '/camera/frames'
     _dir_app_data = '/var/lib/turing/turing-camera-timelapse'
     _subdir_photos = 'photos'
     _subdir_movies = 'movies'
@@ -87,7 +87,7 @@ class CoreService(object):
     def _on_message(self, client, userdata, msg):
         msg_struct = None
 
-        if msg.topic == '/camera/rpi':
+        if msg.topic == self._data_channel:
             self._ensure_directory_structure()
 
             now = datetime.utcnow()
