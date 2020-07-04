@@ -14,10 +14,10 @@ from PIL import Image
 import imageio
 import paho.mqtt.client as mqtt
 
-try:
-    from picamera import PiCamera
-except Exception:
-    pass
+# try:
+#     from picamera import PiCamera
+# except Exception:
+#     pass
 
 
 class CoreService(object):
@@ -28,7 +28,7 @@ class CoreService(object):
     _thread_comms = None
     _thread_lock = None
 
-    _camera = None
+    # _camera = None
     _op_timer = 0
 
     _system_channel = '/system'
@@ -41,11 +41,11 @@ class CoreService(object):
     def __init__(self):
         signal.signal(signal.SIGINT, self.exit_gracefully)
         signal.signal(signal.SIGTERM, self.exit_gracefully)
-
-        try:
-            self._camera = PiCamera()
-        except Exception:
-            self._camera = None
+        #
+        # try:
+        #     self._camera = PiCamera()
+        # except Exception:
+        #     self._camera = None
 
     def start(self):
         self._ensure_directory_structure()
