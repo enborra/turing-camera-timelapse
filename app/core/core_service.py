@@ -256,7 +256,7 @@ class CoreService(object):
                 success_collecting_images = True
 
             except Exception as e:
-                print('[CAMERA.TIMELAPSE] Had an issue compiling images for a summary video.')
+                print('[CAMERA.TIMELAPSE] Had an issue compiling images for a summary video. ERROR: %s' % e.message)
 
             if success_collecting_images:
                 if len(images) > 0:
