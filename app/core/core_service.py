@@ -98,35 +98,44 @@ class CoreService(object):
             unixtime = calendar.timegm(now.utctimetuple())
             ts = unixtime - (now.second)
 
-            current_year = str(now.year)
-            path_photos_year = os.path.join(self._dir_app_data, self._subdir_photos, current_year)
-            self._ensure_directory_existence(path_photos_year)
-
-            current_month = str(now.month)
-            path_photos_month = os.path.join(self._dir_app_data, self._subdir_photos, current_year, current_month)
-            self._ensure_directory_existence(path_photos_month)
-
-            current_day = str(now.day)
-            path_photos_day = os.path.join(self._dir_app_data, self._subdir_photos, current_year, current_month, current_day)
-            self._ensure_directory_existence(path_photos_day)
-
-            current_hour = str(now.hour+1)
-            path_photos_hour = os.path.join(self._dir_app_data, self._subdir_photos, current_year, current_month, current_day, current_hour)
-            self._ensure_directory_existence(path_photos_hour)
+            directory_prepped = False
 
             try:
-                image_base64 = msg.payload
+                current_year = str(now.year)
+                path_photos_year = os.path.join(self._dir_app_data, self._subdir_photos, current_year)
+                self._ensure_directory_existence(path_photos_year)
 
-                # ts = time.time()
-                # filename = '%s.png' % str(ts)
-                filename = os.path.join(path_photos_hour, '%s.jpg'%str(ts))
+                current_month = str(now.month)
+                path_photos_month = os.path.join(self._dir_app_data, self._subdir_photos, current_year, current_month)
+                self._ensure_directory_existence(path_photos_month)
 
-                if not os.path.exists(filename):
-                    fh = open(filename, 'wb')
-                    fh.write(base64.b64decode(image_base64))
+                current_day = str(now.day)
+                path_photos_day = os.path.join(self._dir_app_data, self._subdir_photos, current_year, current_month, current_day)
+                self._ensure_directory_existence(path_photos_day)
+
+                current_hour = str(now.hour+1)
+                path_photos_hour = os.path.join(self._dir_app_data, self._subdir_photos, current_year, current_month, current_day, current_hour)
+                self._ensure_directory_existence(path_photos_hour)
+
+                directory_prepped = True
 
             except Exception as e:
-                print('[CAMERA-TIMELAPSE] problem receiving message: %s' % e)
+                print('[CAMERA.TIMELAPSE] Could not prepare directory to store current photo in. Cannot store photo recieved at %s' % ts )
+
+            if directory_prepped:
+                try:
+                    image_base64 = msg.payload
+
+                    # ts = time.time()
+                    # filename = '%s.png' % str(ts)
+                    filename = os.path.join(path_photos_hour, '%s.jpg'%str(ts))
+
+                    if not os.path.exists(filename):
+                        fh = open(filename, 'wb')
+                        fh.write(base64.b64decode(image_base64))
+
+                except Exception as e:
+                    print('[CAMERA-TIMELAPSE] problem receiving message: %s' % e)
 
     def _on_publish(self, mosq, obj, mid):
         pass
@@ -233,22 +242,28 @@ class CoreService(object):
 
         if not os.path.exists(movie_path):
             images = []
+            success_collecting_images = False
 
-            for subdir, dirs, files in os.walk(photo_dir):
-                for file in sorted(files):
-                    file_path = os.path.join(subdir, file)
+            try:
+                for subdir, dirs, files in os.walk(photo_dir):
+                    for file in sorted(files):
+                        file_path = os.path.join(subdir, file)
 
-                    if file_path.endswith('.jpg'):
-                        if not file_path.endswith('.DS_Store'):
-                            images.append(imageio.imread(file_path))
+                        if file_path.endswith('.jpg'):
+                            if not file_path.endswith('.DS_Store'):
+                                images.append(imageio.imread(file_path))
 
-            if len(images) > 0:
-                try:
-                    imageio.mimsave(movie_path, images, format=export_filetype)
-                except Exception as e:
-                    print('Error: %s' % e)
+                success_collecting_images = True
 
+            except Exception as e:
+                print('[CAMERA.TIMELAPSE] Had an issue compiling images for a summary video.')
 
+            if success_collecting_images:
+                if len(images) > 0:
+                    try:
+                        imageio.mimsave(movie_path, images, format=export_filetype)
+                    except Exception as e:
+                        print('[CAMERA.TIMELAPSE] Error compiling summary video: %s' % e)
 
 
     # STANDARD SERVICE OPERATION METHODS
