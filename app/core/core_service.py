@@ -41,43 +41,47 @@ class CoreService(object):
     def __init__(self):
         signal.signal(signal.SIGINT, self.exit_gracefully)
         signal.signal(signal.SIGTERM, self.exit_gracefully)
-        #
-        # try:
-        #     self._camera = PiCamera()
-        # except Exception:
-        #     self._camera = None
 
     def start(self):
-        self._ensure_directory_structure()
+        start_success = True
 
-        self._comm_client = mqtt.Client(
-            client_id="service_camera_timelapse",
-            clean_session=True
-        )
+        try:
+            self._ensure_directory_structure()
 
-        self._comm_client.on_message = self._on_message
-        self._comm_client.on_connect = self._on_connect
-        self._comm_client.on_publish = self._on_publish
-        self._comm_client.on_subscribe = self._on_subscribe
+            self._comm_client = mqtt.Client(
+                client_id="service_camera_timelapse",
+                clean_session=True
+            )
 
-        self._thread_lock = threading.RLock()
+            self._comm_client.on_message = self._on_message
+            self._comm_client.on_connect = self._on_connect
+            self._comm_client.on_publish = self._on_publish
+            self._comm_client.on_subscribe = self._on_subscribe
 
-        self._thread_comms = threading.Thread(target=self._start_thread_comms)
-        self._thread_comms.setDaemon(True)
-        self._thread_comms.start()
+            self._thread_lock = threading.RLock()
 
-        while True:
-            if self._op_timer >= 60:
-                self._ensure_summary_movies()
-                self._op_timer = 0
+            self._thread_comms = threading.Thread(target=self._start_thread_comms)
+            self._thread_comms.setDaemon(True)
+            self._thread_comms.start()
+        except Exception as e:
+            start_success = False
 
-            else:
-                self._op_timer += 1
+        if start_success:
+            while True:
+                if self._op_timer >= 60:
+                    self._ensure_summary_movies()
+                    self._op_timer = 0
 
-            time.sleep(0.1)
+                else:
+                    self._op_timer += 1
 
-            if self._kill_now:
-                break
+                time.sleep(0.1)
+
+                if self._kill_now:
+                    break
+        else:
+            print('[CAMERA-TIMELAPSE] Startup routine failed. Shutting down.')
+            pass
 
     def _on_connect(self, client, userdata, flags, rc):
         self._comm_client.subscribe(self._data_channel)
