@@ -7,8 +7,8 @@ After=network.target
 Type=simple
 ExecStart=/bin/bash /etc/turing/services/turing-camera-timelapse/boot.sh
 Restart=on-abort
-StandardOutput=/etc/turing/outputs/turing.camera.timelapse/out.log
-StandardError=/etc/turing/outputs/turing.camera.timelapse/err.log
+StandardOutput=/var/lib/turing/turing.camera.timelapse/outputs/out.log
+StandardError=/var/lib/turing/turing.camera.timelapse/outputs/err.log
 
 [Install]
 WantedBy=multi-user.target
