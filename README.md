@@ -2,6 +2,9 @@
 
 Service for recording timelapse photo files from camera feed
 
+Service logs output and error messages are stored in:
+- /var/lib/turing/turing-camera-timelapse/outputs/out.log
+- /var/lib/turing/turing-camera-timelapse/outputs/err.log
 
 ## Install requirements
 
